@@ -1,0 +1,288 @@
+# Complete Standalone Project Reference Document
+
+This document is self-contained — anyone on your team can read only this and know exactly what the project is, why every piece exists, and what to do next, without needing any other context. Use the numbered checkpoints as your shared task tracker. Bookmark this response.
+
+---
+
+# PART 1: The Project, In Full
+
+## 1.1 What we're building
+
+We are reproducing a research paper: **"Fine-Grained DINO Tuning with Dual Supervision for Face Forgery Detection"** (arXiv:2511.12107v1, Nov 2025). The paper builds a deepfake (face forgery) detector by attaching a custom lightweight adapter — the **DFF-Adapter** — to a frozen, pretrained vision model called **DINOv2**. We are also adding one small original contribution: testing whether "softening" part of the training signal fixes a limitation the paper's own authors admit to.
+
+## 1.2 Why this problem matters (plain language)
+
+Deepfakes are AI-generated or AI-manipulated face images/videos realistic enough to fool people. Detecting them automatically is an important security problem. The core difficulty: a detector trained on today's fake-generation techniques must still catch tomorrow's new techniques it has never seen — this is called **generalization**, and it's the hardest part of the whole field.
+
+## 1.3 The core idea of the paper, explained from first principles
+
+**Step A — Start with a pretrained "eye."**
+Instead of training a neural network from scratch, we start with **DINOv2**, a Vision Transformer (ViT) that Meta AI pretrained on millions of general images (not faces specifically) using self-supervised learning. It already has a very refined sense of textures, shapes, and structure. We **freeze** it — meaning during our training, none of DINOv2's own weights change. This saves compute and avoids "forgetting" its general knowledge.
+
+**Step B — Attach small trainable "adapters" instead of retraining everything.**
+Fully retraining DINOv2 would be too expensive and prone to overfitting on our smaller dataset. So we attach small trainable modules called **LoRA (Low-Rank Adaptation)** at specific points inside DINOv2, and only train those. LoRA works by adding a small learned "correction" to certain weight matrices, computed as the product of two small matrices (A and B) instead of one huge matrix — this means very few parameters need training.
+
+**Step C — Insert adapters at EVERY layer, not just the last one (this is the paper's first key idea).**
+Most prior work only adapts the final transformer block of DINOv2. This paper's insight: important forgery clues live in low-level texture patterns detected in **early** layers, not just high-level semantic patterns in **late** layers. So DFF-Adapter inserts a LoRA-based module into the query, value, and dense projection of **every single transformer block**.
+
+**Step D — Train on TWO tasks at once, not just one (this is the paper's second key idea).**
+Instead of only training "real vs. fake" (binary classification), the model is also trained to guess **which specific forgery technique** created the fake (face-swap? face-reenactment? synthetic face?) — a multi-class classification task. This forces the model to learn fine, technique-specific artifact patterns instead of one vague "something's off" signal. There are three branches inside each DFF-Adapter block:
+- **Authenticity branch** — does the real/fake job (the branch we actually care about)
+- **Forgery-type branch** — auxiliary task, classifies which manipulation method was used (training scaffolding only — discarded at inference time)
+- **Shared branch** — a bridge that lets fine-grained knowledge learned by the forgery-type branch flow into and help the authenticity branch too
+
+**Step E — Use a "mixture of experts" style router for smarter feature usage (this is the paper's third key idea).**
+Within each DFF-Adapter, instead of one single LoRA module handling everything, there's a **pool of N LoRA "experts"** (small specialist modules). The input features get split into **h sub-space "heads"** (chunks along the channel dimension). For each chunk, a small **router** network scores all N experts and picks the **top-3** best-fit ones, combining their outputs. Intuition: different forgery types leave different "flavors" of artifacts, so letting different feature sub-spaces specialize via different expert combinations captures more diverse patterns than one-size-fits-all.
+
+**Step F — Train with two forward passes per batch.**
+For every batch of images, the frozen DINOv2 + adapters are run **twice**:
+1. Task-flag = 0 → authenticity mode → binary cross-entropy loss (L_bce) — "is this real or fake?"
+2. Task-flag = 1 → forgery-type mode → multi-class cross-entropy loss (L_ftc) — "which technique made this fake?"
+
+Total loss = λ₀·L_bce + λ₁·L_ftc (λ values are just weights controlling how much each task matters — paper uses λ₀=10, λ₁=2). Only the adapters + tiny classifier heads get updated via backpropagation — DINOv2 itself never changes.
+
+**Step G — At inference (actual use), drop the forgery-type branch.**
+Once training is done, only the authenticity branch + shared branch are used to make the real/fake decision. The forgery-type branch was just a training aid.
+
+## 1.4 How success is measured
+
+- **Intra-dataset test:** train and test on the same dataset (FF++) — tests basic competence.
+- **Cross-dataset test:** train on FF++, test on entirely different datasets (Celeb-DF-v2, DFDCP) — tests generalization to new data.
+- **Metric — AUC (Area Under the ROC Curve):** a number from 50 (random guessing) to 100 (perfect separation of real vs. fake) measuring how well the model ranks fakes as "more fake" than reals across all possible decision thresholds.
+- **Metric — EER (Equal Error Rate):** the point where the false-accept rate equals the false-reject rate; lower is better.
+
+## 1.5 The paper's own admitted limitation (Appendix D) — and our extension
+
+The paper's Appendix D states: the forgery-type auxiliary task assumes different manipulation techniques leave **consistent, distinguishable** artifact patterns. In reality, artifacts can overlap between techniques, be subtle, or not fit cleanly into any known category — which can inject **noisy training signal** into the auxiliary task, potentially hurting the main authenticity task.
+
+**Our extension:** instead of forcing a hard, always-confident forgery-type label, we apply **label smoothing** to the forgery-type targets (softening the one-hot target distribution slightly) and compare cross-dataset AUC/EER against the paper's original hard-label version. An optional stretch goal (only if time allows): an explicit "ambiguous/unknown" class for uncertain samples.
+
+---
+
+# PART 2: Full Concept List You Need To Know
+
+Work through these roughly in this order. Everything past "regression + classification" (which you already know) is listed here.
+
+1. **Neural net basics recap** — forward pass, backprop, loss functions (you know this)
+2. **Vision Transformer (ViT)** — patch embeddings, positional encoding, self-attention, multi-head attention, CLS token, transformer block structure
+3. **Transfer learning & frozen backbones** — what freezing means, why we do it
+4. **Self-supervised learning (conceptual only)** — how DINOv2 learns without labels
+5. **DINOv2 specifics** — CLS token, patch-level features, "registers" (extra tokens that stabilize attention)
+6. **Parameter-efficient fine-tuning (PEFT)** — why full fine-tuning is expensive/risky
+7. **LoRA (Low-Rank Adaptation)** — low-rank matrix decomposition (A, B matrices), where injected (Q/K/V/dense projections), rank r, scaling factor α
+8. **Adapters** (bottleneck adapter layers) — the general concept LoRA is one variant of
+9. **Multi-task learning** — shared vs. task-specific parameters, loss weighting (λ balancing), why auxiliary tasks can help a primary task
+10. **Mixture-of-Experts (MoE)** — expert pools, gating/routing networks, softmax gating, top-k selection
+11. **Deepfake domain knowledge** — face-swap vs. face-reenactment vs. entire-face-synthesis; what "artifacts" look like (blending boundaries, texture inconsistency)
+12. **Cross-dataset vs. cross-manipulation evaluation** — why this is the real generalization test
+13. **AUC-ROC** — derive/understand it, don't just call `sklearn.roc_auc_score` blindly
+14. **EER** — what it means, how the threshold is found
+15. **t-SNE** — dimensionality reduction for visualizing embeddings (secondary/optional deliverable)
+16. **Grad-CAM** — visualizing what regions of an image a model attends to (optional, paper's Appendix B — not required for our core deliverables but nice-to-have)
+17. **Label smoothing** — softening one-hot targets, standard regularization technique (needed for our extension)
+18. **Data leakage in video-based datasets** — why splits must be done at video/identity level, not frame level
+19. **Mixed precision training, gradient accumulation, gradient checkpointing** — memory-saving training techniques (needed given hardware constraints)
+
+---
+
+# PART 3: Step-by-Step Implementation Roadmap (Checkpoints)
+
+Each checkpoint below is self-contained: what it is, why it exists, what "done" looks like, and roughly who owns it primarily (M1 = Member 1/Data-Backbone-Baseline Lead, M2 = Member 2/DFF-Adapter-Training-Analysis Lead — but both should understand every checkpoint per your SPO's joint-responsibility clause).
+
+---
+
+### CHECKPOINT 0 — Environment & Access Setup
+**Owner:** Both (parallel)
+**What:** Set up Python/PyTorch environment (Colab Pro, Kaggle, or lab GPU per your confirmed hardware tier). Submit FF++ official access request form (this can take days — do this literally first, day one). Set up a shared code repo (GitHub) and an experiment-tracking tool (Weights & Biases or TensorBoard).
+**Done when:** PyTorch + CUDA verified working on your GPU; repo exists with a README; FF++ access request submitted; Celeb-DF-v2 and DFDCP access/download links identified.
+
+---
+
+### CHECKPOINT 1 — Learn ViT + LoRA hands-on (shared learning exercise)
+**Owner:** Both (do this together — single most important shared exercise)
+**What:** Implement a tiny LoRA layer from scratch on a single `nn.Linear` layer (not using any library) and verify: (a) it adds only a small number of parameters, (b) freezing the base linear layer and training only LoRA's A/B matrices still lets the combined layer learn something on a toy task (e.g., fit a random linear function).
+**Why:** This single exercise is what will make the rest of the project click. If you understand this, DFF-Adapter is just "many of these, organized cleverly."
+**Done when:** You can explain, without notes, why LoRA has fewer parameters than a full weight update, and you have working code proving it trains correctly on a toy example.
+
+---
+
+### CHECKPOINT 2 — Load frozen DINOv2 and verify freezing
+**Owner:** M1 primary
+**What:** Load `facebook/dinov2-with-registers-large` (or Base, depending on your finalized hardware tier — see SPO Section IV) via HuggingFace `transformers`. Freeze all its parameters (`requires_grad = False` on every parameter). Run a forward pass on a dummy image and print output shapes (CLS token dimension, patch token dimensions).
+**Done when:** Model loads, memory footprint checked, forward pass runs, you've printed and understood the total parameter count of DINOv2 itself (needed later for the parameter-efficiency analysis in the SPO).
+
+---
+
+### CHECKPOINT 3 — Dataset acquisition, organization, and leakage-safe splits
+**Owner:** M1 primary
+**What:** Once FF++ access is granted, download it (c23 compression version). Also get Celeb-DF-v2 and DFDCP. Organize into a consistent folder/metadata structure (video ID, label, manipulation-type label, split assignment). **Critically:** create train/validation/test splits at the **video or identity level BEFORE** any frame extraction — this prevents frames from the same video leaking across splits, which would artificially inflate results.
+**Done when:** You have a metadata file (e.g., CSV) listing every video, its real/fake label, its forgery-type label (for FF++), and its assigned split, with zero identity overlap across splits — write a small verification script that asserts this.
+
+---
+
+### CHECKPOINT 4 — Face detection, cropping, and preprocessing pipeline
+**Owner:** M1 primary
+**What:** Using `facenet-pytorch` (MTCNN) or a similar face detector, extract a fixed number of frames per video, detect and crop the face region, resize to 224×224, and save as image files (not videos — saves storage and speeds up training). Build this as a reusable script/module callable for FF++, Celeb-DF, and DFDCP alike. Add standard augmentation (random flip, color jitter, JPEG-compression augmentation) for training data only (not val/test).
+**Done when:** Running the pipeline on a handful of sample videos from each dataset produces correctly cropped 224×224 face images, saved with a naming scheme that preserves video ID / label / split info, and total disk usage stays within your ~50–100GB budget.
+
+---
+
+### CHECKPOINT 5 — Baseline #1: DINOv2 + Linear Probe
+**Owner:** M1 primary
+**What:** Attach a single linear layer on top of the frozen DINOv2's CLS token output. Train only this linear layer for real/fake binary classification on FF++ using standard BCE loss. This is a complete mini-project you already know how to do (it's just classification with a new feature extractor).
+**Why:** This is your simplest baseline — the floor that every fancier method must beat. Also doubles as your first real end-to-end pipeline test (data loading → model → loss → backward → checkpoint).
+**Done when:** You have a trained linear-probe model, an AUC number on FF++ test set, and a saved checkpoint. This also validates your entire data pipeline (Checkpoints 3–4) actually works end-to-end.
+
+---
+
+### CHECKPOINT 6 — Baseline #2: DINOv2 + plain single-task LoRA
+**Owner:** M1 primary
+**What:** Attach plain LoRA modules (from Checkpoint 1's from-scratch implementation) to DINOv2's Q/V projections — but only in the **last** transformer block (mimicking what prior "naive" methods do, per the paper's critique), and only train the authenticity task (no forgery-type task yet). Train and evaluate the same way as Checkpoint 5.
+**Why:** This is your second baseline, directly representing "what everyone else does" that the paper argues against. It should outperform Checkpoint 5 (linear probe) somewhat, but is expected to underperform the full DFF-Adapter — that gap is your evidence that the paper's ideas matter.
+**Done when:** Trained model, AUC number, saved checkpoint, and a short written note comparing it to the linear-probe baseline.
+
+---
+
+### CHECKPOINT 7 — Evaluation infrastructure (AUC, EER, cross-dataset scripts)
+**Owner:** M1 primary
+**What:** Implement (a) frame-level prediction, (b) video-level aggregation (average frame predictions per video — this is what the paper reports), (c) AUC computation (verify against `sklearn.roc_auc_score` but understand the manual computation too), (d) EER computation, (e) a script that loads any trained checkpoint and evaluates it on any dataset (for cross-dataset testing later).
+**Done when:** Running this evaluation script on your Checkpoint 5 and 6 baselines produces correct, sane AUC numbers (well above 50, since even simple methods should beat random guessing on this task), plus you can call the same script on Celeb-DF and DFDCP once those datasets are preprocessed.
+
+---
+
+### CHECKPOINT 8 — LoRA Expert Bank (dummy-tensor stage)
+**Owner:** M2 primary
+**What:** Before touching real DINOv2 features, implement the LoRA expert bank concept on dummy/random tensors: a pool of N LoRA modules (A_j, B_j pairs), where given an input feature slice, you can compute all N experts' outputs.
+**Why:** Isolates and de-risks the hardest new code (the router/expert logic) from the complexity of the real model, so bugs are easier to find. Building on dummy tensors lets you unit-test shapes and logic in isolation.
+**Done when:** Given a random input tensor of the right shape, you can compute outputs from all N experts and verify output shapes match expectations, with unit tests.
+
+---
+
+### CHECKPOINT 9 — Forgery-Aware Multi-Head Router (dummy-tensor stage)
+**Owner:** M2 primary
+**What:** Implement the router: split a feature tensor into h sub-space heads, for each head compute a softmax score over the N experts, select the top-3, normalize their weights (renormalize the top-3 softmax scores to sum to 1), compute the weighted combination of the top-3 experts' outputs for that head, then concatenate all heads' outputs back together.
+**Done when:** On dummy tensors, you can verify: (a) exactly 3 experts are selected per head, (b) the selection can differ across heads and across different input tensors (i.e., it's actually adaptive, not always picking the same 3), (c) output shapes are correct after concatenation.
+
+---
+
+### CHECKPOINT 10 — Shared Head Adapter (dummy-tensor stage)
+**Owner:** M2 primary
+**What:** Implement the shared branch: same expert-bank mechanism as Checkpoint 8, but using a **global** router (one score vector, not per-head, not per-task) that produces one combined output from the same pool of N experts.
+**Done when:** Given a dummy input, the shared head adapter produces a single output tensor of the expected shape, using its own independent routing logic from the task-specific heads.
+
+---
+
+### CHECKPOINT 11 — Shared-Enhanced Task Fusion (dummy-tensor stage)
+**Owner:** M2 primary
+**What:** Implement the residual fusion: given the frozen backbone's CLS token, the shared branch output, and a task-specific branch's output(s), concatenate them along the channel dimension and add residually to the CLS token, producing the fused representation used for final classification (separately for the authenticity CLS token and the forgery-type CLS token, per Equations 6 and 8 in the paper).
+**Done when:** Given dummy CLS token + dummy shared/task outputs, the fusion produces a correctly-shaped combined representation, verified with a unit test on tensor dimensions.
+
+---
+
+### CHECKPOINT 12 — DFF-Adapter wired into a single real DINOv2 transformer block
+**Owner:** M2 primary, M1 verifies
+**What:** Now replace dummy tensors with real hidden states from one actual DINOv2 transformer block (a hook or forward-pass modification). Insert the full DFF-Adapter (task-specific heads + shared head + router, from Checkpoints 8–11) into that one block's Q/V/dense projections. Verify: gradients flow correctly back to the adapter parameters (and NOT to frozen DINOv2 weights), and forward pass shapes are correct.
+**Why:** This is the first real integration point, and integration bugs (shape mismatches, wrong hook placement) are most likely here. Testing on **one block first** before scaling to all blocks makes debugging far easier.
+**Done when:** A forward + backward pass through DINOv2 + this one DFF-Adapter block runs without errors, `loss.backward()` populates gradients only on adapter parameters (verify with a script checking `.grad is not None` for adapter params and `.grad is None` for frozen DINOv2 params), and Member 1 has independently re-run and verified this (per your SPO's cross-verification duty).
+
+---
+
+### CHECKPOINT 13 — DFF-Adapter inserted into EVERY transformer block
+**Owner:** M2 primary
+**What:** Scale Checkpoint 12 up: insert the DFF-Adapter into every transformer block of DINOv2 (not just one), using a loop/config-driven approach rather than hardcoding each block separately. Implement the task-flag mechanism (0 = authenticity mode, 1 = forgery-type mode) that determines which branch's outputs get used in the final fusion for a given forward pass.
+**Done when:** A full forward pass through the entire adapted DINOv2 runs correctly in both task-flag modes, producing an authenticity CLS token in mode 0 and a forgery-type CLS token in mode 1, with correct shapes for both.
+
+---
+
+### CHECKPOINT 14 — Classifier heads + dual loss + full training loop
+**Owner:** M2 primary
+**What:** Add the two small final classifier layers (authenticity: binary output; forgery-type: multi-class output over however many manipulation categories FF++ provides — 4 for FF++: Deepfakes, Face2Face, FaceSwap, NeuralTextures, plus "real" makes 5 classes typically, or paper-specific convention — check paper Table 1/Figure 2 conventions). Implement the dual forward-pass training loop per batch (task-flag 0 pass → BCE loss; task-flag 1 pass → CE loss; combine as λ₀·L_bce + λ₁·L_ftc; backward; optimizer step). Add checkpointing every 200–500 steps (per your SPO's crash-prevention plan), mixed precision, gradient accumulation if needed, and try/except emergency-save wrapping.
+**Done when:** A full training run for even just 1 epoch on a small data subset completes without crashing, loss values are logged and decreasing, and checkpoints are being saved to persistent storage at the configured interval.
+
+---
+
+### CHECKPOINT 15 — End-to-end smoke test on small data subset
+**Owner:** Both
+**What:** Before committing to a full training run, train the full DFF-Adapter model on a small subset (e.g., 50–100 videos) for a few epochs, purely to catch integration bugs cheaply. Evaluate on a tiny held-out subset. Sanity-check: does the loss go down? Is AUC above random (50)?
+**Why:** This is your cheapest possible full-pipeline validation before spending real compute budget. If something's broken, you want to know now, on data you can re-run in minutes, not after a multi-hour full run.
+**Done when:** Loss decreases sensibly across epochs, AUC on the tiny held-out subset is meaningfully above 50, and both members have watched this run complete and understand every stage of it.
+
+---
+
+### CHECKPOINT 16 — Full training run on FF++
+**Owner:** M2 primary (execution), M1 co-monitors
+**What:** Train the full DFF-Adapter on the complete (or as-large-as-feasible) FF++ training split, for as many epochs as your hardware tier and timeline allow (paper uses 50; you will likely use fewer — document this deviation). Use your finalized hardware tier's configuration (batch size, mixed precision, gradient checkpointing as needed per SPO Section IV).
+**Done when:** Training completes (or is stopped via early stopping on validation AUC), final checkpoint is saved, and training logs/curves are available for the report.
+
+---
+
+### CHECKPOINT 17 — Intra-dataset and cross-dataset evaluation
+**Owner:** M1 primary (using Checkpoint 7's infrastructure)
+**What:** Evaluate the Checkpoint 16 model on: (a) FF++ test split (intra-dataset), (b) Celeb-DF-v2 (cross-dataset), (c) DFDCP (cross-dataset). Record AUC and EER for each.
+**Done when:** You have a results table with AUC/EER for all three datasets, and a written comparison against the paper's Table 1 numbers, explaining any gaps (backbone size, epochs, batch size, hardware — per your SPO's honest-comparison framing).
+
+---
+
+### CHECKPOINT 18 — Full ablation suite
+**Owner:** M2 primary (execution), M1 co-interprets
+**What:** Run each row of your planned ablation table (SPO Table II): linear probe → single-task LoRA → +expert bank → +router → +shared fusion → full DFF-Adapter → full model without auxiliary task. Record AUC/EER for each on at least one cross-dataset benchmark.
+**Done when:** Complete ablation table filled in with real numbers, and both members can explain, for each row, *why* that component should help (or not) based on the architecture.
+
+---
+
+### CHECKPOINT 19 — Parameter-efficiency analysis
+**Owner:** M1 primary
+**What:** Report total DINOv2 parameter count (frozen) vs. total trainable parameter count (adapters + classifier heads only). Compare against the paper's reported 3.5M trainable parameters.
+**Done when:** A clear stated number/table, e.g., "X total parameters, Y trainable (Z% of total)," included in your report.
+
+---
+
+### CHECKPOINT 20 — Limitation-investigation experiment (label smoothing)
+**Owner:** M2 primary
+**What:** Modify the forgery-type loss computation to use label smoothing (a small ε applied to the one-hot forgery-type targets — standard `nn.CrossEntropyLoss(label_smoothing=ε)` or manual implementation). Retrain (or fine-tune from the Checkpoint 16 model, if time-constrained) with this change. Re-evaluate cross-dataset AUC/EER, especially on DFDCP (structurally most different from FF++'s categories).
+**Done when:** A side-by-side comparison table: hard-label DFF-Adapter vs. soft-label DFF-Adapter, on all cross-dataset benchmarks, with a written interpretation of whether the extension helped.
+
+---
+
+### CHECKPOINT 21 — (Optional/stretch) Ambiguous/unknown abstain class
+**Owner:** M2, only if time permits
+**What:** Only pursue if Checkpoint 20 is done early and time remains. Requires deciding a heuristic for which training samples get relabeled "ambiguous" and retraining.
+**Done when:** Either completed with results, or explicitly and honestly marked as "not attempted due to time" in your final report — this is fine and already anticipated in your SPO language.
+
+---
+
+### CHECKPOINT 22 — Visualization (t-SNE, secondary deliverable)
+**Owner:** M1 primary
+**What:** Extract CLS token embeddings from both a baseline model and your full DFF-Adapter model, on FF++ (intra) and Celeb-DF-v2 (cross), and visualize with t-SNE, colored by real/fake and by forgery-type.
+**Done when:** Plots generated and included in the report, with a short interpretation (do DFF-Adapter's embeddings look more separated/clustered than the baseline's?).
+
+---
+
+### CHECKPOINT 23 — Report writing and final packaging
+**Owner:** Both
+**What:** Compile all results (AUC/EER tables, ablation table, parameter-efficiency numbers, limitation-experiment results, visualizations) into your final report. Package: code repository, trained model checkpoint(s), final report, presentation slides.
+**Done when:** All SPO-promised deliverables exist and are organized for submission.
+
+---
+
+### CHECKPOINT 24 — Viva/presentation prep (role-reversal rehearsal)
+**Owner:** Both
+**What:** Each member fully presents the *entire* project (not just their half) while the other acts as a critical examiner, asking questions like: why DINOv2 not plain ViT? why freeze the backbone? why LoRA specifically? why top-3 experts, not top-1? what does λ control, and what happens if it's too high? what does the router actually learn? why dual-task training helps? why cross-dataset eval matters more than in-domain accuracy? what's the biggest limitation, and how did you investigate it? what's the computational overhead of the adapters? Then switch roles.
+**Done when:** Both members can independently and confidently explain the complete system end-to-end.
+
+---
+
+# PART 4: Quick-Reference Facts (so nothing gets lost)
+
+- **Paper:** arXiv:2511.12107v1, Zhang, Yu, Xia et al., "Fine-Grained DINO Tuning with Dual Supervision for Face Forgery Detection"
+- **Backbone:** DINOv2-Large-with-registers primary; Base is fallback per confirmed GPU tier
+- **Datasets:** FF++ (c23, train), Celeb-DF-v2 & DFDCP (cross-dataset test)
+- **Key hyperparameters (paper's values, your starting point):** LoRA rank r=16, scaling α=32, N=6 LoRA experts, h=4 head adapters, λ₀=10, λ₁=2, image size 224×224, paper's batch size 24 (yours will differ per hardware tier)
+- **Our extension:** label smoothing on forgery-type loss, addressing Appendix D's stated limitation
+- **Metrics:** video-level AUC (primary), EER (secondary)
+- **Hardware tiers:** A (24GB+, DINOv2-Large, full config) / B (16GB, Large+checkpointing or Base) / C (12GB, Base/Small, all memory-saving techniques) — see SPO Section IV for full detail
+- **Crash prevention:** checkpoint every 200–500 steps, mixed precision + gradient accumulation always on, gradient checkpointing when VRAM uncertain, try/except emergency saves, DataLoader streaming from disk (never load full dataset into RAM)
+
+---
+
+This document should be everything either of you needs to pick up any checkpoint independently. If you share it with your teammate along with "I'm currently on Checkpoint N," they'll have full context without needing anything else from this conversation.

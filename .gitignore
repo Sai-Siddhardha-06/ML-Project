@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual environment
+mlpenv/
+venv/
+.venv/
+
+# Datasets
+ff_data/
+Celeb_DF_V2/
+
+# Extracted frames
+frames/
+frames_old/
+frames_test_old/
+
+# Generated embeddings
+embeddings/
+
+# Trained checkpoints
+checkpoints/
+
+# Pretrained model weights
+*.safetensors
+*.bin
+*.pt
+*.pth
+
+# Archives
+*.zip
+
+# Temporary/scratch files
+rough.txt
+hi.txt
+note.txt

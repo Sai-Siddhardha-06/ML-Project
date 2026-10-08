@@ -1,0 +1,7 @@
+FF++ c23 leakage-safe source-pair split
+Random seed: 42
+
+Train source pairs: 400
+Validation source pairs: 50
+Test source pairs: 50
+Total source pairs: 500
