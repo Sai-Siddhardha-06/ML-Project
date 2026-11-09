@@ -1,0 +1,214 @@
+\documentclass[aspectratio=169,10pt]{beamer}
+\usetheme{Madrid}
+\usecolortheme{default}
+\usepackage{graphicx}
+\usepackage{array}
+\setbeamertemplate{navigation symbols}{}
+\newcommand{\todo}[1]{\textbf{[TODO: #1]}}
+
+\title[DFF-Adapter Reproduction]{Reproducing DFF-Adapter: Fine-Grained DINOv2 Tuning with Dual Supervision for Face Forgery Detection}
+\author[Sudhiksha Mattewada, Moguluri Sai Siddhardha]{Sudhiksha Mattewada-B24CS027, Moguluri Sai Siddhardha-B24DS018 }
+\date{}
+
+\begin{document}
+
+\begin{frame}\titlepage\end{frame}
+
+\begin{frame}{Problem and motivation}
+\begin{itemize}
+\item Face-forgery detectors score $\approx$99\% on their training benchmark but often fail on unseen manipulations
+\item Question: does a \textbf{parameter-efficient} DINOv2 detector reproduce both strong FF++ accuracy \emph{and} cross-dataset generalization?
+\item Paper: Fine-Grained DINO Tuning with Dual Supervision for Face Forgery Detection (2511.12107v1)
+\item Criterion: reproduce paper results (own re-implementation); extension [attempted]: label-smoothed type loss
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Baseline paper: DFF-Adapter}
+\begin{itemize}
+\item Frozen DINOv2 (paper: registers variant, \textbf{Large}), 3.5M trainable parameters
+\item Multi-head LoRA-expert adapters on query, value and output projections of \textbf{every} block (prior work: last block or last layers only)
+\item Rank 16, $\alpha=32$, 6 experts, 4 heads: 1 shared head + 3 task heads (top-3 routing); FAMHR router + SETF fusion
+\item Dual supervision during training; inference uses fused authenticity + shared branches only
+\item Reported: best overall on five benchmarks, strong cross-dataset / cross-manipulation results
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Our approach}
+\centering
+\includegraphics[height=0.66\textheight]{Pipeline.png}
+\vspace{2pt}
+\begin{itemize}\footnotesize
+\item $\mathcal{L}=10\cdot\mathrm{BCE}(\text{auth})+2\cdot\mathrm{CE}(\text{type})$; two passes per batch; Small: 667{,}374 trainable parameters
+\item Extension: type targets $(1-\epsilon)\,e_y+\epsilon/K$, $\epsilon=0.1$, type loss only
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Data and Experimental Setup}
+\footnotesize
+\textbf{Training Data and Preprocessing}
+\begin{itemize}
+    \item \textbf{Dataset:} FaceForensics++ (FF++) c23
+    \item \textbf{Size:} 5,000 videos across 5 classes (original + 4 manipulations)
+    \item \textbf{Preprocessing:} MTCNN face detection and cropping to $224\times224$
+    \item \textbf{Frame extraction:} 32 frames per video
+\end{itemize}
+\vspace{2pt}
+\textbf{Cross-Dataset Evaluation}
+\begin{itemize}
+    \item \textbf{Celeb-DF-v1:} 100 videos, 3,200 frames
+    \item \textbf{Celeb-DF-v2:} 518 videos, 16,576 frames
+    \item \textbf{DFDC subset:} 392 videos (76 real, 316 fake), 12,544 frames
+\end{itemize}
+\vspace{2pt}
+\textbf{Experimental Configuration}
+\begin{itemize}
+    \item \textbf{Backbone:} Frozen DINOv2-Small / Base
+    \item \textbf{Training:} 12 / 30 epochs; batch size 24
+    \item \textbf{Frames per video:} training-10, validation-8
+    \item \textbf{Optimizer settings:} Learning rate $10^{-4}$; weight decay 0.01
+    \item \textbf{Environment:} Random seed 42; Kaggle NVIDIA T4
+    \item \textbf{Metrics:} Video-level AUC (primary), EER and frame-level AUC
+\end{itemize}
+\vspace{4pt}
+\centering
+\scriptsize
+\textit{Paper configuration: DINOv2-Large, 50 epochs, learning rate $2\times10^{-4}$, weight decay $10^{-5}$, RTX 4090.}
+\end{frame}
+
+\begin{frame}{Results: Cross-Dataset Generalization}
+\scriptsize
+\begin{columns}[T,onlytextwidth]
+\column{0.5\textwidth}
+\centering
+\textbf{Video-level AUC (\%)}
+\vspace{3pt}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+Model (Ep.) & FF++ & CDF-v1 & CDF-v2 & DFDC\\\hline
+Small (12) & 99.08 & 81.20 & 85.02 & --\\
+\textbf{Small (30)} & \textbf{99.08} & \textbf{82.98} & \textbf{86.25} & \textbf{88.03}\\
+Small + LS (30) & 99.05 & 81.20 & 84.74 & 87.45\\
+Base (12) & 99.08 & 82.43 & 81.51 & --\\
+Base (30) & 99.16 & 81.71 & 84.22 & 84.00\\
+Paper Large (50) & 99.56 & 96.14 & 95.26 & 89.96\\\hline
+\end{tabular}
+\column{0.5\textwidth}
+\centering
+\textbf{Equal Error Rate (\%)}
+\vspace{3pt}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+Model (Ep.) & FF++ & CDF-v1 & CDF-v2 & DFDC\\\hline
+Small (12) & -- & 30.65 & 22.94 & --\\
+\textbf{Small (30)} & \textbf{3.57} & \textbf{26.32} & \textbf{22.35} & \textbf{19.74}\\
+Small + LS (30) & 2.86 & 26.32 & 25.00 & 19.94\\
+Base (12) & -- & 25.81 & 26.18 & --\\
+Base (30) & 3.57 & 28.95 & 23.82 & 23.68\\
+Paper Large (50) & -- & n/r & 12.65 & 17.96\\\hline
+\end{tabular}
+\end{columns}
+\vspace{8pt}
+\hrule
+\vspace{6pt}
+\footnotesize
+\begin{itemize}
+\item \textbf{Best Performer:} Small (30 epochs) achieves our best overall cross-dataset performance.
+\item \textbf{Label Smoothing:} Yields the lowest FF++ EER (2.86\%) but does not improve cross-dataset AUC.
+\item \textbf{Generalization Gap:} Remains weaker on Celeb-DF, while our DFDC subset results are closer to the paper.
+\item \textbf{Consistency:} EERs correspond to the model checkpoint with the highest validation video-AUC.
+\end{itemize}
+\vspace{4pt}
+\centering
+\scriptsize
+\textit{Note: FF++ shows our validation metrics versus the paper's test metrics; the splits differ.}
+\end{frame}
+
+\begin{frame}{Experimental Comparisons: Training, Backbone, and Extensions}
+\scriptsize
+\begin{columns}[T,onlytextwidth]
+\column{0.55\textwidth}
+\centering
+\textbf{12 $\to$ 30 epochs} ($\Delta$ pp)\\[2pt]
+\begin{tabular}{|l||c|c|c|c|}
+\hline
+Model & AUC v1 & EER v1 & AUC v2 & EER v2\\\hline
+Small & $+1.78$ & $-4.33$ & $+1.23$ & $-0.59$\\
+Base & $-0.72$ & $+3.14$ & $+2.71$ & $-2.36$\\\hline
+\end{tabular}
+\column{0.43\textwidth}
+\centering
+\textbf{Base $-$ Small, 30 ep.} ($\Delta$ AUC pp)\\[2pt]
+\begin{tabular}{|l||c|}
+\hline
+Celeb-DF-v1 & $-1.27$\\
+Celeb-DF-v2 & $-2.03$\\
+DFDC & $-4.03$\\
+FF++ val & $+0.08$\\\hline
+\end{tabular}
+\end{columns}
+\vspace{6pt}
+\centering
+\textbf{Label Smoothing as a Limitation-Focused Extension (LS $-$ baseline)}\\[2pt]
+\begin{tabular}{|l||c|c|c|}
+\hline
+Small, 30 ep. & $\Delta$ video AUC & $\Delta$ EER & $\Delta$ frame AUC\\\hline
+Celeb-DF-v1 & $-1.78$ & $0.00$ & n/a\\
+Celeb-DF-v2 & $-1.51$ & $+2.65$ & n/a\\
+DFDC subset & $-0.58$ & $+0.20$ & $+0.91$\\\hline
+\end{tabular}
+\vspace{8pt}
+\hrule
+\vspace{6pt}
+\footnotesize
+\begin{itemize}
+\item \textbf{Training Duration:} Longer training improves Small's cross-dataset results, while Base shows mixed effects.
+\item \textbf{Backbone Size:} Base gives only a marginally higher FF++ validation AUC (+0.08 pp), but performs worse on the unseen datasets.
+\item \textbf{Label Smoothing:} No video AUC gain on any unseen set; DFDC frame AUC improved slightly (+0.91 pp).
+\item \textbf{Architectural Focus:} The paper reports benefits from its router and shared task fusion; our current experiments focus on backbone size, training duration, and label smoothing.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Results at a glance}
+\centering
+\includegraphics[height=0.72\textheight]{fig_auc}
+\end{frame}
+
+\begin{frame}{Discussion}
+\begin{columns}[T]
+\column{0.5\textwidth}
+\includegraphics[width=\textwidth]{fig_gap}
+\column{0.5\textwidth}
+\begin{itemize}
+\item In-domain accuracy $\ne$ robustness: $-16.10$ pp (CDF-V1), $-12.8$ pp (CDF-V2), $-11.05$ pp (DFDC) from FF++
+\item Gap to paper is concentrated on Celeb-DF; causes (backbone, recipe, protocol, implementation) are not separable here
+\item Bigger backbone and longer training do not guarantee better generalization
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Conclusions and Path Forward}
+\footnotesize
+\textbf{Conclusions}
+\begin{itemize}
+\item \textbf{Generalization:} FF++ AUC matches closely, and the DFDC subset is within 2 pp (88.03\% vs.\ 89.96\%). However, the Celeb-DF generalization gap was not reproduced.
+\item \textbf{Configurations:} Small (30 epochs) performed best. Using a larger backbone (Base) or adding label smoothing did not improve cross-dataset robustness.
+\item \textbf{Takeaway:} Source-dataset performance alone is insufficient to judge a deepfake detector.
+\end{itemize}
+\vspace{6pt}
+\textbf{Limitations $\to$ Next Steps}
+\begin{itemize}
+\item \textbf{Evaluation Protocol:} We used unverified splits and mixed checkpoints, making direct comparisons difficult. \textit{Next step:} Evaluate a single, consistent checkpoint across all datasets using strictly verified splits.
+\item \textbf{Setup \& Statistical Noise:} We used smaller backbones (Small/Base) and a single seed, meaning 1--2 pp differences are within noise. \textit{Next step:} Test DINOv2-Large with the paper's exact recipe across $\ge$3 seeds.
+\item \textbf{Ablation Clarity:} Current experiments show \emph{what} changes, not \emph{why}. \textit{Next step:} Run strict one-factor ablations to isolate the adapter, type loss, and label smoothing.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{References}
+\footnotesize
+\begin{thebibliography}{9}
+\bibitem{a} T. Zhang et al., ``Fine-Grained DINO Tuning with Dual Supervision for Face Forgery Detection,'' AAAI, vol.~40, no.~15, pp.~12780--12788, 2026.
+\bibitem{b} C. Szegedy, V. Vanhoucke, S. Ioffe, J. Shlens, and Z. Wojna, "Rethinking the inception architecture for computer vision," in Proc. IEEE Conf. Comput. Vis. Pattern Recognit. (CVPR), 2016, pp. 2818–2826.
+\end{thebibliography}
+\end{frame}
+
+\end{document}

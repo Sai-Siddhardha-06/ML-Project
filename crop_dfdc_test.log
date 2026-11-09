@@ -1,0 +1,23 @@
+Listing labeled DFDC training videos:
+  REAL: 77 videos
+  FAKE: 323 videos
+
+Videos in queue: 5
+GPU: NVIDIA GeForce RTX 4050 Laptop GPU
+Device: cuda
+/home/sai/ML Project/fresh/.venv311/lib/python3.11/site-packages/facenet_pytorch/models/mtcnn.py:34: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  state_dict = torch.load(state_dict_path)
+/home/sai/ML Project/fresh/.venv311/lib/python3.11/site-packages/facenet_pytorch/models/mtcnn.py:79: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  state_dict = torch.load(state_dict_path)
+/home/sai/ML Project/fresh/.venv311/lib/python3.11/site-packages/facenet_pytorch/models/mtcnn.py:132: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  state_dict = torch.load(state_dict_path)
+  0%|          | 0/5 [00:00<?, ?video/s]  0%|          | 0/5 [00:02<?, ?video/s, done=1, elapsed_min=0.0, failed=0, skipped=0] 20%|██        | 1/5 [00:02<00:10,  2.65s/video, done=1, elapsed_min=0.0, failed=0, skipped=0] 20%|██        | 1/5 [00:04<00:10,  2.65s/video, done=2, elapsed_min=0.1, failed=0, skipped=0] 40%|████      | 2/5 [00:04<00:06,  2.18s/video, done=2, elapsed_min=0.1, failed=0, skipped=0] 40%|████      | 2/5 [00:06<00:06,  2.18s/video, done=3, elapsed_min=0.1, failed=0, skipped=0] 60%|██████    | 3/5 [00:06<00:04,  2.03s/video, done=3, elapsed_min=0.1, failed=0, skipped=0] 60%|██████    | 3/5 [00:07<00:04,  2.03s/video, done=4, elapsed_min=0.1, failed=0, skipped=0] 80%|████████  | 4/5 [00:07<00:01,  1.76s/video, done=4, elapsed_min=0.1, failed=0, skipped=0] 80%|████████  | 4/5 [00:08<00:01,  1.76s/video, done=5, elapsed_min=0.1, failed=0, skipped=0]100%|██████████| 5/5 [00:08<00:00,  1.59s/video, done=5, elapsed_min=0.1, failed=0, skipped=0]100%|██████████| 5/5 [00:08<00:00,  1.80s/video, done=5, elapsed_min=0.1, failed=0, skipped=0]
+
+Preprocessing summary
+---------------------
+Newly completed: 5
+Already completed: 0
+Failed: 0
+Elapsed time: 0.1 minutes
+Output directory: crops/dfdc
+Failure log: crops/dfdc_failed.txt

@@ -1,0 +1,22 @@
+{
+  "backbone": "tiny",
+  "crops_root": "runs/smoke/smoke_data",
+  "manifest": "runs/smoke/smoke_data/ffpp_manifest_split.csv",
+  "out_dir": "runs/smoke",
+  "epochs": 2,
+  "frames_per_video": 2,
+  "val_frames": 2,
+  "batch_size": 8,
+  "lr": 0.0002,
+  "weight_decay": 1e-05,
+  "lambda_auth": 10.0,
+  "lambda_type": 2.0,
+  "label_smoothing": 0.0,
+  "no_aux": false,
+  "num_workers": 0,
+  "max_hours": 0,
+  "ckpt_every": 3,
+  "log_every": 2,
+  "seed": 0,
+  "smoke": true
+}

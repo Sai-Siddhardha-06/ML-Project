@@ -1,0 +1,10 @@
+{"epoch": 0, "step": 2, "loss_auth": 0.6413835883140564, "loss_type": 1.6151301860809326, "acc_type": 0.25, "time_min": 0.07}
+{"epoch": 0, "step": 4, "loss_auth": 0.6313154995441437, "loss_type": 1.6404595971107483, "acc_type": 0.125, "time_min": 0.07}
+{"epoch": 0, "step": 6, "loss_auth": 0.5934941172599792, "loss_type": 1.5586404204368591, "acc_type": 0.3125, "time_min": 0.07}
+{"epoch": 0, "step": 8, "loss_auth": 0.5649926662445068, "loss_type": 1.694261372089386, "acc_type": 0.125, "time_min": 0.07}
+{"epoch": 0, "step": 8, "val_video_auc": 1.0, "val_video_eer": 0.0, "val_frame_auc": 1.0, "val_n_videos": 10, "val_n_frames": 20, "time_min": 0.07}
+{"epoch": 1, "step": 10, "loss_auth": 0.5604926645755768, "loss_type": 1.6102038621902466, "acc_type": 0.3125, "time_min": 0.08}
+{"epoch": 1, "step": 12, "loss_auth": 0.5015797317028046, "loss_type": 1.489155888557434, "acc_type": 0.3125, "time_min": 0.08}
+{"epoch": 1, "step": 14, "loss_auth": 0.49170488119125366, "loss_type": 1.7143065333366394, "acc_type": 0.0, "time_min": 0.08}
+{"epoch": 1, "step": 16, "loss_auth": 0.405739963054657, "loss_type": 1.4819198250770569, "acc_type": 0.1875, "time_min": 0.08}
+{"epoch": 1, "step": 16, "val_video_auc": 1.0, "val_video_eer": 0.0, "val_frame_auc": 1.0, "val_n_videos": 10, "val_n_frames": 20, "time_min": 0.08}
