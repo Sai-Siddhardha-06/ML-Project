@@ -1,0 +1,12 @@
+{
+  "checkpoint": "checkpoints/dinov2_lora_baseline/best.pt",
+  "frame_auc": 0.9342679565429688,
+  "video_auc": 0.9574999999999999,
+  "video_eer": 0.10125000000000002,
+  "eer_threshold": 0.7799701690673828,
+  "videos_evaluated": 500,
+  "real_videos": 100,
+  "fake_videos": 400,
+  "frames_per_video": 32,
+  "aggregation": "mean"
+}

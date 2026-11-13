@@ -1,0 +1,27 @@
+============================================================
+CP6 — DINOv2 + Plain LoRA Evaluation
+============================================================
+Device     : cuda
+Checkpoint : checkpoints/dinov2_lora_baseline/best.pt
+test: 16000 frames from 500 videos
+
+Loading DINOv2...
+Best epoch  : 9
+Best val AUC: 0.95219
+
+Running test evaluation...
+Batch 500/2000
+Batch 1000/2000
+Batch 1500/2000
+Batch 2000/2000
+
+============================================================
+CP6 TEST RESULTS
+============================================================
+Test frame AUC  : 0.93427
+Test video AUC  : 0.95750
+Test video EER  : 0.10125
+EER threshold   : 0.77979
+Videos evaluated: 500
+Real/Fake       : 100/400
+Frames/video    : 32-32

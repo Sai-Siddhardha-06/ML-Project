@@ -1,0 +1,398 @@
+============================================================
+DINOv2-Base + Plain LoRA Baseline
+============================================================
+Device        : cuda
+Model         : facebook/dinov2-base
+LoRA rank     : 16
+LoRA alpha    : 32
+LoRA dropout  : 0.0
+LoRA target   : final block Q/V
+
+MODE          : FULL TRAINING
+Epochs        : 10
+
+train: 128000 frames from 4000 videos
+val: 16000 frames from 500 videos
+
+Loading DINOv2...
+Injecting LoRA into final block Q/V...
+
+PARAMETER REPORT
+------------------------------------------------------------
+Total parameters     : 86,630,401
+Trainable parameters : 49,921
+Trainable percentage : 0.0576%
+
+TRAINABLE PARAMETERS
+------------------------------------------------------------
+dino.encoder.layer.11.attention.attention.query.lora_A.weight          12,288
+dino.encoder.layer.11.attention.attention.query.lora_B.weight          12,288
+dino.encoder.layer.11.attention.attention.value.lora_A.weight          12,288
+dino.encoder.layer.11.attention.attention.value.lora_B.weight          12,288
+classifier.weight                                                      768
+classifier.bias                                                        1
+
+AMP enabled: True
+
+Running initial forward pass...
+Input shape : (8, 3, 224, 224)
+Output shape: (8,)
+Forward pass: PASS
+
+Epoch 01/10 | batch 500/16000 | loss=0.97867
+Epoch 01/10 | batch 1000/16000 | loss=0.44761
+Epoch 01/10 | batch 1500/16000 | loss=0.64260
+Epoch 01/10 | batch 2000/16000 | loss=0.15000
+Epoch 01/10 | batch 2500/16000 | loss=0.19506
+Epoch 01/10 | batch 3000/16000 | loss=0.34780
+Epoch 01/10 | batch 3500/16000 | loss=0.38459
+Epoch 01/10 | batch 4000/16000 | loss=0.36519
+Epoch 01/10 | batch 4500/16000 | loss=0.23190
+Epoch 01/10 | batch 5000/16000 | loss=0.18096
+Epoch 01/10 | batch 5500/16000 | loss=0.27847
+Epoch 01/10 | batch 6000/16000 | loss=0.39753
+Epoch 01/10 | batch 6500/16000 | loss=0.39291
+Epoch 01/10 | batch 7000/16000 | loss=0.25270
+Epoch 01/10 | batch 7500/16000 | loss=0.12674
+Epoch 01/10 | batch 8000/16000 | loss=0.22917
+Epoch 01/10 | batch 8500/16000 | loss=0.48598
+Epoch 01/10 | batch 9000/16000 | loss=0.49904
+Epoch 01/10 | batch 9500/16000 | loss=0.44220
+Epoch 01/10 | batch 10000/16000 | loss=0.22702
+Epoch 01/10 | batch 10500/16000 | loss=0.24593
+Epoch 01/10 | batch 11000/16000 | loss=0.56890
+Epoch 01/10 | batch 11500/16000 | loss=0.07522
+Epoch 01/10 | batch 12000/16000 | loss=0.05482
+Epoch 01/10 | batch 12500/16000 | loss=0.10474
+Epoch 01/10 | batch 13000/16000 | loss=0.10833
+Epoch 01/10 | batch 13500/16000 | loss=0.32829
+Epoch 01/10 | batch 14000/16000 | loss=0.10310
+Epoch 01/10 | batch 14500/16000 | loss=0.13065
+Epoch 01/10 | batch 15000/16000 | loss=0.77347
+Epoch 01/10 | batch 15500/16000 | loss=0.82102
+Epoch 01/10 | batch 16000/16000 | loss=0.46233
+Epoch 01/10 | train_loss=0.33590 | val_loss=0.31541 | val_AUC=0.90483
+  -> New best model saved (epoch 1, val AUC=0.90483)
+  GPU memory: 0.34 GB allocated, 0.52 GB reserved
+Epoch 02/10 | batch 500/16000 | loss=0.13621
+Epoch 02/10 | batch 1000/16000 | loss=0.40481
+Epoch 02/10 | batch 1500/16000 | loss=0.35325
+Epoch 02/10 | batch 2000/16000 | loss=0.58225
+Epoch 02/10 | batch 2500/16000 | loss=0.12623
+Epoch 02/10 | batch 3000/16000 | loss=0.16119
+Epoch 02/10 | batch 3500/16000 | loss=0.08700
+Epoch 02/10 | batch 4000/16000 | loss=0.04420
+Epoch 02/10 | batch 4500/16000 | loss=0.45863
+Epoch 02/10 | batch 5000/16000 | loss=0.81750
+Epoch 02/10 | batch 5500/16000 | loss=0.12143
+Epoch 02/10 | batch 6000/16000 | loss=0.20405
+Epoch 02/10 | batch 6500/16000 | loss=0.28192
+Epoch 02/10 | batch 7000/16000 | loss=0.53206
+Epoch 02/10 | batch 7500/16000 | loss=0.07473
+Epoch 02/10 | batch 8000/16000 | loss=0.42124
+Epoch 02/10 | batch 8500/16000 | loss=0.22720
+Epoch 02/10 | batch 9000/16000 | loss=0.10082
+Epoch 02/10 | batch 9500/16000 | loss=0.18493
+Epoch 02/10 | batch 10000/16000 | loss=0.48753
+Epoch 02/10 | batch 10500/16000 | loss=0.28996
+Epoch 02/10 | batch 11000/16000 | loss=0.14635
+Epoch 02/10 | batch 11500/16000 | loss=0.48029
+Epoch 02/10 | batch 12000/16000 | loss=0.03511
+Epoch 02/10 | batch 12500/16000 | loss=0.22939
+Epoch 02/10 | batch 13000/16000 | loss=0.17421
+Epoch 02/10 | batch 13500/16000 | loss=0.07679
+Epoch 02/10 | batch 14000/16000 | loss=0.03562
+Epoch 02/10 | batch 14500/16000 | loss=0.10577
+Epoch 02/10 | batch 15000/16000 | loss=0.27338
+Epoch 02/10 | batch 15500/16000 | loss=0.15564
+Epoch 02/10 | batch 16000/16000 | loss=0.24738
+Epoch 02/10 | train_loss=0.23923 | val_loss=0.31711 | val_AUC=0.92693
+  -> New best model saved (epoch 2, val AUC=0.92693)
+  GPU memory: 0.34 GB allocated, 0.52 GB reserved
+Epoch 03/10 | batch 500/16000 | loss=0.20895
+Epoch 03/10 | batch 1000/16000 | loss=0.40546
+Epoch 03/10 | batch 1500/16000 | loss=0.28350
+Epoch 03/10 | batch 2000/16000 | loss=0.35135
+Epoch 03/10 | batch 2500/16000 | loss=0.50491
+Epoch 03/10 | batch 3000/16000 | loss=0.01828
+Epoch 03/10 | batch 3500/16000 | loss=0.24256
+Epoch 03/10 | batch 4000/16000 | loss=0.07240
+Epoch 03/10 | batch 4500/16000 | loss=0.18191
+Epoch 03/10 | batch 5000/16000 | loss=0.22688
+Epoch 03/10 | batch 5500/16000 | loss=0.21891
+Epoch 03/10 | batch 6000/16000 | loss=0.01365
+Epoch 03/10 | batch 6500/16000 | loss=0.19736
+Epoch 03/10 | batch 7000/16000 | loss=0.29406
+Epoch 03/10 | batch 7500/16000 | loss=0.26200
+Epoch 03/10 | batch 8000/16000 | loss=0.10226
+Epoch 03/10 | batch 8500/16000 | loss=0.18170
+Epoch 03/10 | batch 9000/16000 | loss=0.51277
+Epoch 03/10 | batch 9500/16000 | loss=0.03189
+Epoch 03/10 | batch 10000/16000 | loss=0.06577
+Epoch 03/10 | batch 10500/16000 | loss=0.37734
+Epoch 03/10 | batch 11000/16000 | loss=0.63783
+Epoch 03/10 | batch 11500/16000 | loss=0.19260
+Epoch 03/10 | batch 12000/16000 | loss=0.11174
+Epoch 03/10 | batch 12500/16000 | loss=0.25544
+Epoch 03/10 | batch 13000/16000 | loss=0.25765
+Epoch 03/10 | batch 13500/16000 | loss=0.18944
+Epoch 03/10 | batch 14000/16000 | loss=0.10951
+Epoch 03/10 | batch 14500/16000 | loss=0.14292
+Epoch 03/10 | batch 15000/16000 | loss=0.53561
+Epoch 03/10 | batch 15500/16000 | loss=0.10772
+Epoch 03/10 | batch 16000/16000 | loss=0.10285
+Epoch 03/10 | train_loss=0.19949 | val_loss=0.28231 | val_AUC=0.93405
+  -> New best model saved (epoch 3, val AUC=0.93405)
+  GPU memory: 0.34 GB allocated, 0.52 GB reserved
+Epoch 04/10 | batch 500/16000 | loss=0.45587
+Epoch 04/10 | batch 1000/16000 | loss=0.31188
+Epoch 04/10 | batch 1500/16000 | loss=0.58916
+Epoch 04/10 | batch 2000/16000 | loss=0.07001
+Epoch 04/10 | batch 2500/16000 | loss=0.07094
+Epoch 04/10 | batch 3000/16000 | loss=0.04301
+Epoch 04/10 | batch 3500/16000 | loss=0.17126
+Epoch 04/10 | batch 4000/16000 | loss=0.29412
+Epoch 04/10 | batch 4500/16000 | loss=0.06474
+Epoch 04/10 | batch 5000/16000 | loss=0.09638
+Epoch 04/10 | batch 5500/16000 | loss=0.21562
+Epoch 04/10 | batch 6000/16000 | loss=0.08741
+Epoch 04/10 | batch 6500/16000 | loss=0.05650
+Epoch 04/10 | batch 7000/16000 | loss=0.25931
+Epoch 04/10 | batch 7500/16000 | loss=0.43669
+Epoch 04/10 | batch 8000/16000 | loss=0.17477
+Epoch 04/10 | batch 8500/16000 | loss=0.07720
+Epoch 04/10 | batch 9000/16000 | loss=0.01703
+Epoch 04/10 | batch 9500/16000 | loss=0.07678
+Epoch 04/10 | batch 10000/16000 | loss=0.08520
+Epoch 04/10 | batch 10500/16000 | loss=0.26809
+Epoch 04/10 | batch 11000/16000 | loss=0.03851
+Epoch 04/10 | batch 11500/16000 | loss=0.03234
+Epoch 04/10 | batch 12000/16000 | loss=0.84427
+Epoch 04/10 | batch 12500/16000 | loss=0.49284
+Epoch 04/10 | batch 13000/16000 | loss=0.15388
+Epoch 04/10 | batch 13500/16000 | loss=0.03438
+Epoch 04/10 | batch 14000/16000 | loss=0.23422
+Epoch 04/10 | batch 14500/16000 | loss=0.09605
+Epoch 04/10 | batch 15000/16000 | loss=0.00665
+Epoch 04/10 | batch 15500/16000 | loss=0.23486
+Epoch 04/10 | batch 16000/16000 | loss=0.22753
+Epoch 04/10 | train_loss=0.17065 | val_loss=0.30958 | val_AUC=0.93186
+  GPU memory: 0.34 GB allocated, 0.52 GB reserved
+Epoch 05/10 | batch 500/16000 | loss=0.18168
+Epoch 05/10 | batch 1000/16000 | loss=0.01192
+Epoch 05/10 | batch 1500/16000 | loss=0.03716
+Epoch 05/10 | batch 2000/16000 | loss=0.04013
+Epoch 05/10 | batch 2500/16000 | loss=0.03271
+Epoch 05/10 | batch 3000/16000 | loss=0.27718
+Epoch 05/10 | batch 3500/16000 | loss=0.05754
+Epoch 05/10 | batch 4000/16000 | loss=0.25193
+Epoch 05/10 | batch 4500/16000 | loss=0.04641
+Epoch 05/10 | batch 5000/16000 | loss=0.01456
+Epoch 05/10 | batch 5500/16000 | loss=0.27117
+Epoch 05/10 | batch 6000/16000 | loss=0.18504
+Epoch 05/10 | batch 6500/16000 | loss=0.77089
+Epoch 05/10 | batch 7000/16000 | loss=0.35483
+Epoch 05/10 | batch 7500/16000 | loss=0.19076
+Epoch 05/10 | batch 8000/16000 | loss=0.15236
+Epoch 05/10 | batch 8500/16000 | loss=0.21820
+Epoch 05/10 | batch 9000/16000 | loss=0.30139
+Epoch 05/10 | batch 9500/16000 | loss=0.06967
+Epoch 05/10 | batch 10000/16000 | loss=0.13576
+Epoch 05/10 | batch 10500/16000 | loss=0.10045
+Epoch 05/10 | batch 11000/16000 | loss=0.02663
+Epoch 05/10 | batch 11500/16000 | loss=0.06287
+Epoch 05/10 | batch 12000/16000 | loss=0.07913
+Epoch 05/10 | batch 12500/16000 | loss=0.11765
+Epoch 05/10 | batch 13000/16000 | loss=0.43347
+Epoch 05/10 | batch 13500/16000 | loss=0.00696
+Epoch 05/10 | batch 14000/16000 | loss=0.04251
+Epoch 05/10 | batch 14500/16000 | loss=0.05584
+Epoch 05/10 | batch 15000/16000 | loss=0.25079
+Epoch 05/10 | batch 15500/16000 | loss=0.10413
+Epoch 05/10 | batch 16000/16000 | loss=0.02620
+Epoch 05/10 | train_loss=0.15262 | val_loss=0.32823 | val_AUC=0.94149
+  -> New best model saved (epoch 5, val AUC=0.94149)
+  GPU memory: 0.34 GB allocated, 0.52 GB reserved
+Epoch 06/10 | batch 500/16000 | loss=0.00602
+Epoch 06/10 | batch 1000/16000 | loss=0.00092
+Epoch 06/10 | batch 1500/16000 | loss=0.33753
+Epoch 06/10 | batch 2000/16000 | loss=0.48431
+Epoch 06/10 | batch 2500/16000 | loss=0.14725
+Epoch 06/10 | batch 3000/16000 | loss=0.09642
+Epoch 06/10 | batch 3500/16000 | loss=0.01347
+Epoch 06/10 | batch 4000/16000 | loss=0.17639
+Epoch 06/10 | batch 4500/16000 | loss=0.12154
+Epoch 06/10 | batch 5000/16000 | loss=0.06801
+Epoch 06/10 | batch 5500/16000 | loss=0.04575
+Epoch 06/10 | batch 6000/16000 | loss=0.30854
+Epoch 06/10 | batch 6500/16000 | loss=0.04353
+Epoch 06/10 | batch 7000/16000 | loss=0.03783
+Epoch 06/10 | batch 7500/16000 | loss=0.22044
+Epoch 06/10 | batch 8000/16000 | loss=0.26895
+Epoch 06/10 | batch 8500/16000 | loss=0.00943
+Epoch 06/10 | batch 9000/16000 | loss=0.38181
+Epoch 06/10 | batch 9500/16000 | loss=0.13257
+Epoch 06/10 | batch 10000/16000 | loss=0.04684
+Epoch 06/10 | batch 10500/16000 | loss=0.02729
+Epoch 06/10 | batch 11000/16000 | loss=0.27507
+Epoch 06/10 | batch 11500/16000 | loss=0.00567
+Epoch 06/10 | batch 12000/16000 | loss=0.16109
+Epoch 06/10 | batch 12500/16000 | loss=0.14591
+Epoch 06/10 | batch 13000/16000 | loss=0.36215
+Epoch 06/10 | batch 13500/16000 | loss=0.27766
+Epoch 06/10 | batch 14000/16000 | loss=0.08285
+Epoch 06/10 | batch 14500/16000 | loss=0.24630
+Epoch 06/10 | batch 15000/16000 | loss=0.03541
+Epoch 06/10 | batch 15500/16000 | loss=0.01682
+Epoch 06/10 | batch 16000/16000 | loss=0.15791
+Epoch 06/10 | train_loss=0.13881 | val_loss=0.32015 | val_AUC=0.94477
+  -> New best model saved (epoch 6, val AUC=0.94477)
+  GPU memory: 0.34 GB allocated, 0.52 GB reserved
+Epoch 07/10 | batch 500/16000 | loss=0.02045
+Epoch 07/10 | batch 1000/16000 | loss=0.20117
+Epoch 07/10 | batch 1500/16000 | loss=0.13015
+Epoch 07/10 | batch 2000/16000 | loss=0.03283
+Epoch 07/10 | batch 2500/16000 | loss=0.10123
+Epoch 07/10 | batch 3000/16000 | loss=0.13967
+Epoch 07/10 | batch 3500/16000 | loss=0.51747
+Epoch 07/10 | batch 4000/16000 | loss=0.06223
+Epoch 07/10 | batch 4500/16000 | loss=0.19447
+Epoch 07/10 | batch 5000/16000 | loss=0.06579
+Epoch 07/10 | batch 5500/16000 | loss=0.08362
+Epoch 07/10 | batch 6000/16000 | loss=0.34359
+Epoch 07/10 | batch 6500/16000 | loss=0.33103
+Epoch 07/10 | batch 7000/16000 | loss=0.03239
+Epoch 07/10 | batch 7500/16000 | loss=0.00773
+Epoch 07/10 | batch 8000/16000 | loss=0.23728
+Epoch 07/10 | batch 8500/16000 | loss=0.05266
+Epoch 07/10 | batch 9000/16000 | loss=0.06736
+Epoch 07/10 | batch 9500/16000 | loss=0.08170
+Epoch 07/10 | batch 10000/16000 | loss=0.04514
+Epoch 07/10 | batch 10500/16000 | loss=0.22284
+Epoch 07/10 | batch 11000/16000 | loss=0.01860
+Epoch 07/10 | batch 11500/16000 | loss=0.30286
+Epoch 07/10 | batch 12000/16000 | loss=0.04024
+Epoch 07/10 | batch 12500/16000 | loss=0.44370
+Epoch 07/10 | batch 13000/16000 | loss=0.07865
+Epoch 07/10 | batch 13500/16000 | loss=0.33723
+Epoch 07/10 | batch 14000/16000 | loss=0.02085
+Epoch 07/10 | batch 14500/16000 | loss=0.16372
+Epoch 07/10 | batch 15000/16000 | loss=0.15963
+Epoch 07/10 | batch 15500/16000 | loss=0.14131
+Epoch 07/10 | batch 16000/16000 | loss=0.08963
+Epoch 07/10 | train_loss=0.12711 | val_loss=0.29052 | val_AUC=0.94827
+  -> New best model saved (epoch 7, val AUC=0.94827)
+  GPU memory: 0.34 GB allocated, 0.52 GB reserved
+Epoch 08/10 | batch 500/16000 | loss=0.00691
+Epoch 08/10 | batch 1000/16000 | loss=0.35845
+Epoch 08/10 | batch 1500/16000 | loss=0.03226
+Epoch 08/10 | batch 2000/16000 | loss=0.00687
+Epoch 08/10 | batch 2500/16000 | loss=0.07754
+Epoch 08/10 | batch 3000/16000 | loss=0.39371
+Epoch 08/10 | batch 3500/16000 | loss=0.29297
+Epoch 08/10 | batch 4000/16000 | loss=0.09505
+Epoch 08/10 | batch 4500/16000 | loss=0.12771
+Epoch 08/10 | batch 5000/16000 | loss=0.05573
+Epoch 08/10 | batch 5500/16000 | loss=0.01519
+Epoch 08/10 | batch 6000/16000 | loss=0.23243
+Epoch 08/10 | batch 6500/16000 | loss=0.15897
+Epoch 08/10 | batch 7000/16000 | loss=0.27396
+Epoch 08/10 | batch 7500/16000 | loss=0.02257
+Epoch 08/10 | batch 8000/16000 | loss=0.04813
+Epoch 08/10 | batch 8500/16000 | loss=0.26397
+Epoch 08/10 | batch 9000/16000 | loss=0.68020
+Epoch 08/10 | batch 9500/16000 | loss=0.17571
+Epoch 08/10 | batch 10000/16000 | loss=0.03274
+Epoch 08/10 | batch 10500/16000 | loss=0.00224
+Epoch 08/10 | batch 11000/16000 | loss=0.00412
+Epoch 08/10 | batch 11500/16000 | loss=0.00195
+Epoch 08/10 | batch 12000/16000 | loss=0.09761
+Epoch 08/10 | batch 12500/16000 | loss=0.16714
+Epoch 08/10 | batch 13000/16000 | loss=0.02795
+Epoch 08/10 | batch 13500/16000 | loss=0.03319
+Epoch 08/10 | batch 14000/16000 | loss=0.00585
+Epoch 08/10 | batch 14500/16000 | loss=0.23968
+Epoch 08/10 | batch 15000/16000 | loss=0.13088
+Epoch 08/10 | batch 15500/16000 | loss=0.05085
+Epoch 08/10 | batch 16000/16000 | loss=0.00325
+Epoch 08/10 | train_loss=0.11660 | val_loss=0.28957 | val_AUC=0.94951
+  -> New best model saved (epoch 8, val AUC=0.94951)
+  GPU memory: 0.34 GB allocated, 0.52 GB reserved
+Epoch 09/10 | batch 500/16000 | loss=0.22597
+Epoch 09/10 | batch 1000/16000 | loss=0.02681
+Epoch 09/10 | batch 1500/16000 | loss=0.02236
+Epoch 09/10 | batch 2000/16000 | loss=0.01863
+Epoch 09/10 | batch 2500/16000 | loss=0.00117
+Epoch 09/10 | batch 3000/16000 | loss=0.05253
+Epoch 09/10 | batch 3500/16000 | loss=0.01082
+Epoch 09/10 | batch 4000/16000 | loss=0.08848
+Epoch 09/10 | batch 4500/16000 | loss=0.00487
+Epoch 09/10 | batch 5000/16000 | loss=0.00305
+Epoch 09/10 | batch 5500/16000 | loss=0.04985
+Epoch 09/10 | batch 6000/16000 | loss=0.04777
+Epoch 09/10 | batch 6500/16000 | loss=0.15654
+Epoch 09/10 | batch 7000/16000 | loss=0.02744
+Epoch 09/10 | batch 7500/16000 | loss=0.16687
+Epoch 09/10 | batch 8000/16000 | loss=0.05012
+Epoch 09/10 | batch 8500/16000 | loss=0.02614
+Epoch 09/10 | batch 9000/16000 | loss=0.31841
+Epoch 09/10 | batch 9500/16000 | loss=0.01475
+Epoch 09/10 | batch 10000/16000 | loss=0.06592
+Epoch 09/10 | batch 10500/16000 | loss=0.08878
+Epoch 09/10 | batch 11000/16000 | loss=0.04994
+Epoch 09/10 | batch 11500/16000 | loss=0.01918
+Epoch 09/10 | batch 12000/16000 | loss=0.03636
+Epoch 09/10 | batch 12500/16000 | loss=0.06974
+Epoch 09/10 | batch 13000/16000 | loss=0.12657
+Epoch 09/10 | batch 13500/16000 | loss=0.00901
+Epoch 09/10 | batch 14000/16000 | loss=0.25381
+Epoch 09/10 | batch 14500/16000 | loss=0.01988
+Epoch 09/10 | batch 15000/16000 | loss=0.01140
+Epoch 09/10 | batch 15500/16000 | loss=0.01293
+Epoch 09/10 | batch 16000/16000 | loss=0.23918
+Epoch 09/10 | train_loss=0.11003 | val_loss=0.29054 | val_AUC=0.95219
+  -> New best model saved (epoch 9, val AUC=0.95219)
+  GPU memory: 0.34 GB allocated, 0.52 GB reserved
+Epoch 10/10 | batch 500/16000 | loss=0.24257
+Epoch 10/10 | batch 1000/16000 | loss=0.02023
+Epoch 10/10 | batch 1500/16000 | loss=0.00305
+Epoch 10/10 | batch 2000/16000 | loss=0.00288
+Epoch 10/10 | batch 2500/16000 | loss=0.03022
+Epoch 10/10 | batch 3000/16000 | loss=0.24042
+Epoch 10/10 | batch 3500/16000 | loss=0.15314
+Epoch 10/10 | batch 4000/16000 | loss=0.00798
+Epoch 10/10 | batch 4500/16000 | loss=0.01731
+Epoch 10/10 | batch 5000/16000 | loss=0.06526
+Epoch 10/10 | batch 5500/16000 | loss=0.36866
+Epoch 10/10 | batch 6000/16000 | loss=0.08128
+Epoch 10/10 | batch 6500/16000 | loss=0.00068
+Epoch 10/10 | batch 7000/16000 | loss=0.07766
+Epoch 10/10 | batch 7500/16000 | loss=0.01123
+Epoch 10/10 | batch 8000/16000 | loss=0.00877
+Epoch 10/10 | batch 8500/16000 | loss=0.01583
+Epoch 10/10 | batch 9000/16000 | loss=0.15823
+Epoch 10/10 | batch 9500/16000 | loss=0.00143
+Epoch 10/10 | batch 10000/16000 | loss=0.03551
+Epoch 10/10 | batch 10500/16000 | loss=0.25202
+Epoch 10/10 | batch 11000/16000 | loss=0.14102
+Epoch 10/10 | batch 11500/16000 | loss=0.02660
+Epoch 10/10 | batch 12000/16000 | loss=0.00157
+Epoch 10/10 | batch 12500/16000 | loss=0.10449
+Epoch 10/10 | batch 13000/16000 | loss=0.72387
+Epoch 10/10 | batch 13500/16000 | loss=0.00443
+Epoch 10/10 | batch 14000/16000 | loss=0.03134
+Epoch 10/10 | batch 14500/16000 | loss=0.00171
+Epoch 10/10 | batch 15000/16000 | loss=0.08973
+Epoch 10/10 | batch 15500/16000 | loss=0.08883
+Epoch 10/10 | batch 16000/16000 | loss=0.18209
+Epoch 10/10 | train_loss=0.10117 | val_loss=0.31133 | val_AUC=0.95098
+  GPU memory: 0.34 GB allocated, 0.52 GB reserved
+
+============================================================
+CP6 TRAINING COMPLETE
+============================================================
+Best epoch  : 9
+Best val AUC: 0.95219
+
+Best checkpoint: checkpoints/dinov2_lora_baseline/best.pt
+Last checkpoint: checkpoints/dinov2_lora_baseline/last.pt
